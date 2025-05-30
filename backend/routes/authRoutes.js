@@ -4,11 +4,11 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET;
 
 router.post('/signup', async (req, res) => {
   const { email, password } = req.body;
   try {
+    const JWT_SECRET = process.env.JWT_SECRET;
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: 'User already exists' });
 
@@ -25,6 +25,7 @@ router.post('/signup', async (req, res) => {
 router.post('/signin', async (req, res) => {
   const { email, password } = req.body;
   try {
+    const JWT_SECRET = process.env.JWT_SECRET;
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'User not found' });
 
