@@ -27,8 +27,3 @@ jobs:
       - name: Install backend deps
         run: cd backend && npm install
 
-      - name: Install frontend deps
-        run: cd frontend && npm install
-
-      - name: Build frontend
-        run: cd frontend && npm run build
