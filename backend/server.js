@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import blogRoutes from './routes/blogRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import cors from 'cors';
+import client from 'prom-client'; 
+
 
 dotenv.config();
 
@@ -21,10 +23,18 @@ mongoose.connect(MONGO_URI)
     process.exit(1);
   });
 
+  // Prometheus metrics setup
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics();
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.end(await client.register.metrics());
+});
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:8081',
+  origin: 'http://localhost:8080',
   credentials: true
 }));
 
