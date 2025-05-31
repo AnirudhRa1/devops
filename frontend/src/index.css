@@ -1,0 +1,81 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 255 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 255 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 255 10% 10%;
+
+    --primary: 358 59% 46%; /* Red color - #BE3033 */
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 252 38% 31%; /* Blue color - #3D316E */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 358 59% 46%; /* Red accent - #BE3033 */
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 252 38% 31%; /* Blue ring - #3D316E */
+
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .blog-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .category-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  
+  .category-badge-internships {
+    @apply bg-blue-100 text-secondary;
+  }
+  
+  .category-badge-projects {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .category-badge-bug-help {
+    @apply bg-red-100 text-primary;
+  }
+  
+  .category-badge-events {
+    @apply bg-purple-100 text-purple-800;
+  }
+  
+  .post-card {
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden;
+  }
+  
+  .post-card:hover {
+    @apply -translate-y-1 transition-transform;
+  }
+}
