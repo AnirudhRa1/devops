@@ -28,7 +28,7 @@ jobs:
         run: cd backend && npm install
 
       - name: Install frontend deps
-        run: cd card-feed-stories && npm install
+        run: cd frontend && npm install
 
       - name: Build frontend
-        run: cd card-feed-stories && npm run build
+        run: cd frontend && npm run build
