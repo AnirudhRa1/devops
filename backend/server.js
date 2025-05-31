@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import blogRoutes from './routes/blogRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -22,6 +23,10 @@ mongoose.connect(MONGO_URI)
 
 // Middleware
 app.use(express.json());
+app.use(cors({
+  origin: 'http://localhost:8081',
+  credentials: true
+}));
 
 // Routes
 app.use('/api/blogs', blogRoutes);
