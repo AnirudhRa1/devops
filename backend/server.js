@@ -10,11 +10,14 @@ import client from 'prom-client';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 // MongoDB URI
 const MONGO_URI = 'mongodb+srv://anirudhanirudh982:i5bLufCTgYE77UB3@cluster0.j2govnr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
+app.get('/_ah/health', (req, res) => {
+  res.status(200).send('OK');
+});
 // Connect to MongoDB
 mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ MongoDB connected successfully'))

@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:3000'; // Update this with your backend URL
+export const API_BASE_URL = 'https://backend-service-95433363736.us-central1.run.app/';
 
 export const API_ENDPOINTS = {
   auth: {
