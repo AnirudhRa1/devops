@@ -31,10 +31,10 @@ app.get('/metrics', async (req, res) => {
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());
 });
-// Middleware
+
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:8080',
+  origin: 'https://devops-steel-psi.vercel.app',
   credentials: true
 }));
 
