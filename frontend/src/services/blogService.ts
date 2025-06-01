@@ -1,5 +1,7 @@
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+
 export async function fetchAllBlogs() {
-  const response = await fetch('http://localhost:5000/api/blogs');
+  const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.posts.list}`);
   if (!response.ok) {
     throw new Error('Failed to fetch blogs');
   }
@@ -7,9 +9,9 @@ export async function fetchAllBlogs() {
 }
 
 export async function fetchBlogsByCategory(category: string) {
-  const response = await fetch(`http://localhost:5000/api/blogs/category/${category}`);
+  const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.posts.list}/category/${category}`);
   if (!response.ok) {
     throw new Error('Failed to fetch blogs by category');
   }
   return response.json();
-} 
+}

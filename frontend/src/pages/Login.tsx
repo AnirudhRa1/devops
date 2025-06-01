@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
+import { api } from '@/services/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -38,102 +39,77 @@ const Login = () => {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
-        throw new Error(errorData.message || 'Login failed');
-      }
-
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
+      await api.auth.login(formData.email, formData.password);
       toast({
-        title: "Login successful!",
-        description: "Welcome back to BlogApp!"
+        title: "Success",
+        description: "Login successful!",
       });
-      setIsSubmitting(false);
       navigate('/');
     } catch (error) {
       toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to login",
         variant: "destructive"
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-background">
       <Navigation />
-      
-      <main className="flex-grow flex items-center justify-center">
-        <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-sm border">
-          <h1 className="text-2xl font-bold text-center mb-6">Log in to BlogApp</h1>
-          
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto space-y-6">
+          <div className="space-y-2 text-center">
+            <h1 className="text-3xl font-bold">Welcome Back</h1>
+            <p className="text-gray-500 dark:text-gray-400">
+              Enter your credentials to access your account
+            </p>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 name="email"
+                placeholder="Enter your email"
+                required
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="you@example.com"
-                required
               />
             </div>
-            
             <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-800">
-                  Forgot password?
-                </Link>
-              </div>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 name="password"
+                placeholder="Enter your password"
+                required
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="••••••••"
-                required
               />
             </div>
-            
-            <Button 
-              type="submit"
+            <Button
               className="w-full"
+              type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Logging in...' : 'Log in'}
+              {isSubmitting ? "Logging in..." : "Login"}
             </Button>
-            
-            <div className="text-center text-sm mt-6">
-              <p className="text-gray-600">
-                Don't have an account?{" "}
-                <Link to="/register" className="text-blue-600 hover:text-blue-800 font-medium">
-                  Sign up
-                </Link>
-              </p>
-            </div>
           </form>
+          <div className="text-center">
+            <p>
+              Don't have an account?{" "}
+              <Link to="/register" className="text-primary hover:underline">
+                Register
+              </Link>
+            </p>
+          </div>
         </div>
-      </main>
-      
+      </div>
       <Footer />
     </div>
   );

@@ -2,15 +2,15 @@ export const API_BASE_URL = 'https://backend-service-95433363736.us-central1.run
 
 export const API_ENDPOINTS = {
   auth: {
-    login: '/auth/login',
-    register: '/auth/register',
+    login: '/api/auth/signin',
+    register: '/api/auth/signup',
   },
   posts: {
-    list: '/posts',
-    create: '/posts',
-    getById: (id: string) => `/posts/${id}`,
-    update: (id: string) => `/posts/${id}`,
-    delete: (id: string) => `/posts/${id}`,
+    list: '/api/blogs',
+    create: '/api/blogs',
+    getById: (id: string) => `/api/blogs/${id}`,
+    update: (id: string) => `/api/blogs/${id}`,
+    delete: (id: string) => `/api/blogs/${id}`,
   },
   users: {
     profile: '/users/profile',

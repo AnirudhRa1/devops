@@ -37,7 +37,7 @@ app.get('/metrics', async (req, res) => {
 
 app.use(express.json());
 app.use(cors({
-  origin: 'https://devops-steel-psi.vercel.app',
+  origin: ['https://devops-steel-psi.vercel.app',],
   credentials: true
 }));
 

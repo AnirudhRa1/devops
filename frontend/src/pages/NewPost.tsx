@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
+import { api } from '@/services/api';
 
 const NewPost = () => {
   const navigate = useNavigate();
@@ -53,6 +54,28 @@ const NewPost = () => {
     }
     
     setIsSubmitting(true);
+    
+    try {
+      await api.blogs.create({
+        title: formData.title,
+        content: formData.content,
+        category: formData.category
+      });
+      
+      toast({
+        title: "Success",
+        description: "Post created successfully!",
+      });
+      navigate('/');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create post",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
     
     try {
       const token = localStorage.getItem('token');

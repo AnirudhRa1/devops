@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
+import { api } from '@/services/api';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -48,39 +49,16 @@ const Register = () => {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Registration failed' }));
-        throw new Error(errorData.message || 'Registration failed');
-      }
-
-      const data = await response.json();
-
-      // Store the token
-      localStorage.setItem('token', data.token);
-      
+      await api.auth.register(formData.email, formData.password);
       toast({
-        title: "Registration successful!",
-        description: "Welcome! You can now log in."
+        title: "Success",
+        description: "Registration successful! Please log in.",
       });
-      
       navigate('/login');
     } catch (error) {
       toast({
         title: "Registration failed",
-        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to register",
         variant: "destructive"
       });
     } finally {
@@ -89,73 +67,71 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-background">
       <Navigation />
-      
-      <main className="flex-grow flex items-center justify-center py-8">
-        <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-sm border">
-          <h1 className="text-2xl font-bold text-center mb-6">Create an account</h1>
-          
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto space-y-6">
+          <div className="space-y-2 text-center">
+            <h1 className="text-3xl font-bold">Create an Account</h1>
+            <p className="text-gray-500 dark:text-gray-400">
+              Enter your details to create your account
+            </p>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 name="email"
+                placeholder="Enter your email"
+                required
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="you@example.com"
-                required
               />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 name="password"
+                placeholder="Enter your password"
+                required
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="••••••••"
-                required
               />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
+                placeholder="Confirm your password"
+                required
                 type="password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="••••••••"
-                required
               />
             </div>
-            
-            <Button 
-              type="submit"
+            <Button
               className="w-full"
+              type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creating account...' : 'Sign up'}
+              {isSubmitting ? "Creating account..." : "Register"}
             </Button>
-            
-            <div className="text-center text-sm mt-6">
-              <p className="text-gray-600">
-                Already have an account?{" "}
-                <Link to="/login" className="text-blue-600 hover:text-blue-800 font-medium">
-                  Log in
-                </Link>
-              </p>
-            </div>
           </form>
+          <div className="text-center">
+            <p>
+              Already have an account?{" "}
+              <Link to="/login" className="text-primary hover:underline">
+                Login
+              </Link>
+            </p>
+          </div>
         </div>
-      </main>
-      
+      </div>
       <Footer />
     </div>
   );
