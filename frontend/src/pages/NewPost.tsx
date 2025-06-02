@@ -1,205 +1,165 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navigation from '../components/Navigation';
-import Footer from '../components/Footer';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { toast } from "@/components/ui/use-toast";
-import { api } from '@/services/api';
+import { useAuth } from '../contexts/AuthContext';
+import Header from '../components/Header';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+
+const API_BASE_URL = 'https://backend-service-95433363736.us-central1.run.app';
 
 const NewPost = () => {
+  const [title, setTitle] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [category, setCategory] = useState('');
+  const [content, setContent] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { token, user } = useAuth();
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    excerpt: '',
-    category: ''
-  });
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
-  };
-  
-  const handleSelectChange = (value: string) => {
-    setFormData(prevData => ({
-      ...prevData,
-      category: value
-    }));
-  };
-  
+  const { toast } = useToast();
+
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.title || !formData.content || !formData.category) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill in all required fields.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
+    setIsLoading(true);
+
     try {
-      await api.blogs.create({
-        title: formData.title,
-        content: formData.content,
-        category: formData.category
-      });
-      
-      toast({
-        title: "Success",
-        description: "Post created successfully!",
-      });
-      navigate('/');
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create post",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-    
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('You must be logged in to create a post.');
-      }
-      const response = await fetch('http://localhost:5000/api/blogs', {
+      const response = await fetch(`${API_BASE_URL}/api/blogs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          title: formData.title,
-          content: formData.content,
-          category: formData.category,
+          title,
+          content: `${excerpt}\n\n${content}`,
+          category,
         }),
       });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to create post' }));
-        throw new Error(errorData.message || 'Failed to create post');
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Blog post created successfully!",
+        });
+        navigate('/');
+      } else {
+        throw new Error('Failed to create post');
       }
-      toast({
-        title: "Post created!",
-        description: "Your post has been successfully created."
-      });
-      setIsSubmitting(false);
-      navigate('/');
     } catch (error) {
+      console.error('Error creating post:', error);
       toast({
-        title: "Failed to create post",
-        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
-        variant: "destructive"
+        title: "Error",
+        description: "Failed to create blog post. Please try again.",
+        variant: "destructive",
       });
-      setIsSubmitting(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const handleCancel = () => {
+    navigate('/');
+  };
+
+  if (!user) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
+    <div className="min-h-screen bg-gray-50">
+      <Header />
       
-      <main className="flex-grow">
-        <div className="blog-container py-8">
-          <div className="max-w-2xl mx-auto">
-            <h1 className="text-3xl font-bold mb-8">Create New Post</h1>
-            
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Create New Post</CardTitle>
+          </CardHeader>
+          
+          <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="title">Title *</Label>
                 <Input
                   id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter a descriptive title"
                   required
+                  className="mt-1"
                 />
               </div>
               
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="excerpt">Short Excerpt</Label>
-                <Input
+                <Textarea
                   id="excerpt"
-                  name="excerpt"
-                  value={formData.excerpt}
-                  onChange={handleChange}
+                  value={excerpt}
+                  onChange={(e) => setExcerpt(e.target.value)}
                   placeholder="A brief summary of your post"
+                  className="mt-1 min-h-[80px]"
                 />
               </div>
               
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="category">Category *</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={handleSelectChange}
-                  required
-                >
-                  <SelectTrigger className="w-full">
+                <Select value={category} onValueChange={setCategory} required>
+                  <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="internships">Internships</SelectItem>
+                  <SelectContent className="bg-white">
                     <SelectItem value="projects">Projects</SelectItem>
-                    <SelectItem value="bug-help">Bug Help</SelectItem>
+                    <SelectItem value="internships">Internships</SelectItem>
+                    <SelectItem value="bug help">Bug Help</SelectItem>
                     <SelectItem value="events">Events</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="content">Content *</Label>
                 <Textarea
                   id="content"
-                  name="content"
-                  value={formData.content}
-                  onChange={handleChange}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
                   placeholder="Write your post content here..."
-                  className="min-h-[200px]"
                   required
+                  className="mt-1 min-h-[300px]"
                 />
               </div>
               
-              <div className="flex gap-4 pt-4">
+              <div className="flex space-x-4">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate('/')}
+                  onClick={handleCancel}
+                  disabled={isLoading}
                 >
                   Cancel
                 </Button>
                 <Button 
-                  type="submit"
-                  disabled={isSubmitting}
+                  type="submit" 
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  disabled={isLoading}
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Post'}
+                  {isLoading ? 'Creating...' : 'Create Post'}
                 </Button>
               </div>
             </form>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </main>
-      
-      <Footer />
     </div>
   );
 };

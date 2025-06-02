@@ -9,11 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
-const Login = () => {
+const Signup = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -22,17 +23,17 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const success = await login(email, password);
+      const success = await signup(name, email, password);
       if (success) {
         toast({
           title: "Success",
-          description: "Logged in successfully!",
+          description: "Account created successfully!",
         });
         navigate('/');
       } else {
         toast({
           title: "Error",
-          description: "Invalid email or password. Please try again.",
+          description: "Failed to create account. Please try again.",
           variant: "destructive",
         });
       }
@@ -54,12 +55,25 @@ const Login = () => {
       <main className="flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-            <p className="text-gray-600">Enter your credentials to access your account</p>
+            <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+            <p className="text-gray-600">Join our community and start sharing your ideas</p>
           </CardHeader>
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your full name"
+                  required
+                  className="mt-1"
+                />
+              </div>
+              
               <div>
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -67,7 +81,7 @@ const Login = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="test3@gmail.com"
+                  placeholder="Enter your email"
                   required
                   className="mt-1"
                 />
@@ -80,7 +94,7 @@ const Login = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••"
+                  placeholder="Choose a strong password"
                   required
                   className="mt-1"
                 />
@@ -91,15 +105,15 @@ const Login = () => {
                 className="w-full bg-red-600 hover:bg-red-700 text-white"
                 disabled={isLoading}
               >
-                {isLoading ? 'Logging in...' : 'Login'}
+                {isLoading ? 'Creating account...' : 'Sign up'}
               </Button>
             </form>
             
             <div className="text-center mt-6">
               <p className="text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/signup" className="text-red-600 hover:text-red-700 font-medium">
-                  Register
+                Already have an account?{' '}
+                <Link to="/login" className="text-red-600 hover:text-red-700 font-medium">
+                  Log in
                 </Link>
               </p>
             </div>
@@ -121,4 +135,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;

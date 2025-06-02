@@ -1,164 +1,117 @@
-import React, { useEffect, useState } from 'react';
-import Navigation from '../components/Navigation';
-import Footer from '../components/Footer';
-import CategoryTabs, { Category } from '../components/CategoryTabs';
-import PostCard from '../components/PostCard';
-import { Button } from '@/components/ui/button';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { Filter } from 'lucide-react';
-import { fetchAllBlogs, fetchBlogsByCategory } from '@/services/blogService';
 
-type FilterOption = 'recent' | 'oldest' | 'mostLiked';
+import React, { useState, useEffect } from 'react';
+import Header from '../components/Header';
+import BlogCard from '../components/BlogCard';
+import CategoryFilter from '../components/CategoryFilter';
+import { useToast } from '@/hooks/use-toast';
 
-type Blog = {
-  _id: string;
+interface BlogPost {
+  id: string;
   title: string;
   content: string;
   category: string;
-  author: { email: string } | null;
   createdAt: string;
-  // Add more fields as needed
-};
+  author?: {
+    name: string;
+    email: string;
+  };
+}
+
+const API_BASE_URL = 'https://backend-service-95433363736.us-central1.run.app';
 
 const Home = () => {
-  const [activeCategory, setActiveCategory] = useState<Category>('all');
-  const [filterOption, setFilterOption] = useState<FilterOption>('recent');
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    setLoading(true);
-    setError('');
-    if (activeCategory === 'all') {
-      fetchAllBlogs()
-        .then(data => {
-          setBlogs(data);
-          setLoading(false);
-        })
-        .catch(err => {
-          setError(err.message);
-          setLoading(false);
-        });
+    fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategory === 'all') {
+      setFilteredPosts(posts);
     } else {
-      fetchBlogsByCategory(activeCategory)
-        .then(data => {
-          setBlogs(data);
-          setLoading(false);
-        })
-        .catch(err => {
-          setError(err.message);
-          setLoading(false);
-        });
+      setFilteredPosts(posts.filter(post => 
+        post.category.toLowerCase() === selectedCategory.toLowerCase()
+      ));
     }
-  }, [activeCategory]);
+  }, [posts, selectedCategory]);
 
-  // Filter blogs by category first
-  let filteredBlogs = activeCategory === 'all' 
-    ? [...blogs] 
-    : [...blogs.filter(blog => blog.category === activeCategory)];
-
-  // Then apply sorting based on filter option
-  filteredBlogs = filteredBlogs.sort((a, b) => {
-    switch (filterOption) {
-      case 'recent':
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      case 'oldest':
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      default:
-        return 0;
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/blogs`);
+      if (response.ok) {
+        const data = await response.json();
+        setPosts(data);
+      } else {
+        throw new Error('Failed to fetch posts');
+      }
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load blog posts. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  });
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
+    <div className="min-h-screen bg-gray-50">
+      <Header />
       
-      <main className="flex-grow">
-        <div className="blog-container py-8">
-          <div className="text-center mb-10">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">Welcome to BlogApp</h1>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Discover opportunities, projects, get help, and stay updated with all the latest events.
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Welcome to BlogApp
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Discover opportunities, projects, get help, and stay updated with all the latest events.
+          </p>
+        </div>
+
+        <CategoryFilter 
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="bg-white rounded-lg p-6 animate-pulse">
+                <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded"></div>
+              </div>
+            ))}
+          </div>
+        ) : filteredPosts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-600">
+              {selectedCategory === 'all' 
+                ? 'No blog posts found. Be the first to create one!' 
+                : `No posts found in the ${selectedCategory} category.`
+              }
             </p>
           </div>
-          <div className="flex justify-between items-center mb-6">
-            <CategoryTabs 
-              activeCategory={activeCategory}
-              onCategoryChange={setActiveCategory}
-            />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="ml-2">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  className={filterOption === 'recent' ? 'bg-muted' : ''}
-                  onClick={() => setFilterOption('recent')}
-                >
-                  Most recent
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className={filterOption === 'oldest' ? 'bg-muted' : ''}
-                  onClick={() => setFilterOption('oldest')}
-                >
-                  Oldest first
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPosts.map((post) => (
+              <BlogCard key={post.id} post={post} />
+            ))}
           </div>
-          {loading ? (
-            <div className="text-center py-16">
-              <p className="text-gray-500">Loading blogs...</p>
-            </div>
-          ) : error ? (
-            <div className="text-center py-16">
-              <p className="text-red-500">Error: {error}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredBlogs.map(blog => (
-                <div key={blog._id} className="h-full">
-                  <PostCard post={{
-                    id: blog._id,
-                    title: blog.title,
-                    content: blog.content,
-                    excerpt: blog.content.slice(0, 100) + '...',
-                    category: (['internships', 'projects', 'bug-help', 'events'].includes(blog.category) ? blog.category : 'projects') as 'internships' | 'projects' | 'bug-help' | 'events',
-                    author: {
-                      id: '',
-                      name: blog.author?.email || 'Unknown',
-                      avatar: '',
-                      role: 'student',
-                    },
-                    createdAt: blog.createdAt,
-                    likes: 0,
-                    bookmarked: false,
-                  }} />
-                </div>
-              ))}
-            </div>
-          )}
-          {filteredBlogs.length === 0 && !loading && !error && (
-            <div className="text-center py-16">
-              <p className="text-gray-500">No posts found in this category.</p>
-            </div>
-          )}
-        </div>
+        )}
       </main>
-      <Footer />
     </div>
   );
 };
