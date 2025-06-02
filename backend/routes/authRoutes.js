@@ -56,10 +56,9 @@ router.put('/update', authenticate, async (req, res) => {
 });
 
 // Delete user
-router.delete('/delete', async (req, res) => {
-  const { userId } = req.body;
+router.delete('/delete', authenticate, async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(userId);
+    const user = await User.findByIdAndDelete(req.user.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
