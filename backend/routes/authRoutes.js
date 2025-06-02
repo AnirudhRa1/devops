@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import authenticate from '../middleware/authenticate.js';
 
 const router = express.Router();
 
@@ -40,10 +41,11 @@ router.post('/signin', async (req, res) => {
 });
 
 // Update user name
-router.put('/update', async (req, res) => {
-  const { userId, newName } = req.body;
+router.put('/update', authenticate, async (req, res) => {
+  const userId = req.user.id;
+  const { name } = req.body;
   try {
-    const user = await User.findByIdAndUpdate(userId, { name: newName }, { new: true });
+    const user = await User.findByIdAndUpdate(userId, { name }, { new: true });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
